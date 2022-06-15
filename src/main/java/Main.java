@@ -1,11 +1,11 @@
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -20,25 +20,25 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        String fileName = "data.csv";
+        String fileName2 = "data.xml";
+        String fileName3 = "data.json";
+        String fileName4 = "data2.json";
+
         //  Создание data.csv:
 //        List<String[]> list = new ArrayList<>();
 //        list.add("1,John,Smith,USA,25".split(","));
 //        list.add("2,Inav,Petrov,RU,23".split(","));
-//        String fileName = "data.csv";
 //        createCsvFile(fileName, list);
 
         //  Создание data.xml:
-//        String fileName2 = "data.xml";
 //        try {
 //            createXmlFile(fileName2);
 //        } catch (ParserConfigurationException | TransformerException e) {
@@ -47,23 +47,57 @@ public class Main {
 
         //  Код для 1-го задания:
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
-        String fileName3 = "data.csv";
-        List<Employee> list2 = parseCSV(columnMapping, fileName3);
+        List<Employee> list2 = parseCSV(columnMapping, fileName);
         String json = listToJson(list2);
-        String fileName4 = "data.json";
-        writeString(json, fileName4);
+        writeString(json, fileName3);
 
         //  Код для 2-го задания:
         List<Employee> list3 = new ArrayList<>();
-        String fileName5 = "data.xml";
         try {
-            list3 = parseXML(fileName5);
+            list3 = parseXML(fileName2);
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
         }
-        String fileName6 = "data2.json";
-        writeString(listToJson(list3), fileName6);
+        writeString(listToJson(list3), fileName4);
 
+        //  Код для 3-го задания:
+        String json2 = readString(fileName3);
+        List<Employee> list4 = new ArrayList<>();
+        try {
+            list4 = jsonToList(json2);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        for (Employee employee : list4) {
+            System.out.println(employee);
+        }
+
+    }
+
+    private static List<Employee> jsonToList(String json) throws ParseException {
+        List<Employee> list = new ArrayList<>();
+        JsonParser parser = new JsonParser();
+        JsonArray array = (JsonArray) parser.parse(json);
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        for (JsonElement element : array) {
+            Employee employee = gson.fromJson(element, Employee.class);
+            list.add(employee);
+        }
+        return list;
+    }
+
+    private static String readString(String fileName) {
+        String s = "text";
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String s1;
+            while ((s1 = reader.readLine()) != null) {
+                s = s1;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return s;
     }
 
     private static List<Employee> parseXML(String fileName) throws ParserConfigurationException,
@@ -76,23 +110,35 @@ public class Main {
         NodeList nodeList = root.getChildNodes();
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
-            NodeList employeeChildNodes = node.getChildNodes();
-            String[] text = new String[employeeChildNodes.getLength()];
-            for (int j = 0; j < employeeChildNodes.getLength(); j++) {
-                Node node1 = employeeChildNodes.item(j);
-                text[j] = node1.getTextContent();
-            }
+            Element element = (Element) node;
+            String idString = element.getElementsByTagName("id").item(0).getTextContent();
+            String firstName = element.getElementsByTagName("firstName").item(0).getTextContent();
+            String lastName = element.getElementsByTagName("lastName").item(0).getTextContent();
+            String country = element.getElementsByTagName("country").item(0).getTextContent();
+            String ageString = element.getElementsByTagName("age").item(0).getTextContent();
             long id = 0;
-            String firstName = text[1];
-            String lastName = text[2];
-            String country = text[3];
             int age = 0;
             try {
-                id = Integer.parseInt(text[0]);
-                age = Integer.parseInt(text[4]);
+                id = Integer.parseInt(idString);
+                age = Integer.parseInt(ageString);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
+//            NodeList employeeChildNodes = node.getChildNodes();
+//            String[] text = new String[employeeChildNodes.getLength()];
+//            for (int j = 0; j < employeeChildNodes.getLength(); j++) {
+//                Node node1 = employeeChildNodes.item(j);
+//                text[j] = node1.getTextContent();
+//            }
+//            firstName = text[1];
+//            lastName = text[2];
+//            country = text[3];
+//            try {
+//                id = Integer.parseInt(text[0]);
+//                age = Integer.parseInt(text[4]);
+//            } catch (NumberFormatException e) {
+//                e.printStackTrace();
+//            }
             list.add(new Employee(id, firstName, lastName, country, age));
         }
         return list;
