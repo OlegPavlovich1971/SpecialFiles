@@ -47,28 +47,28 @@ public class Main {
 
         //  Код для 1-го задания:
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
-        List<Employee> list2 = parseCSV(columnMapping, fileName);
-        String json = listToJson(list2);
+        List<Employee> listFromCsv = parseCSV(columnMapping, fileName);
+        String json = listToJson(listFromCsv);
         writeString(json, fileName3);
 
         //  Код для 2-го задания:
-        List<Employee> list3 = new ArrayList<>();
+        List<Employee> listFromXml = new ArrayList<>();
         try {
-            list3 = parseXML(fileName2);
+            listFromXml = parseXML(fileName2);
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
         }
-        writeString(listToJson(list3), fileName4);
+        writeString(listToJson(listFromXml), fileName4);
 
         //  Код для 3-го задания:
         String json2 = readString(fileName3);
-        List<Employee> list4 = new ArrayList<>();
+        List<Employee> listFromJson = new ArrayList<>();
         try {
-            list4 = jsonToList(json2);
+            listFromJson = jsonToList(json2);
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        for (Employee employee : list4) {
+        for (Employee employee : listFromJson) {
             System.out.println(employee);
         }
 
@@ -88,16 +88,16 @@ public class Main {
     }
 
     private static String readString(String fileName) {
-        String s = "text";
+        String string = "text";
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
-            String s1;
-            while ((s1 = reader.readLine()) != null) {
-                s = s1;
+            String stringCurrent;
+            while ((stringCurrent = reader.readLine()) != null) {
+                string = stringCurrent;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return s;
+        return string;
     }
 
     private static List<Employee> parseXML(String fileName) throws ParserConfigurationException,
@@ -133,6 +133,8 @@ public class Main {
 //            firstName = text[1];
 //            lastName = text[2];
 //            country = text[3];
+//            long id = 0;
+//            int age = 0;
 //            try {
 //                id = Integer.parseInt(text[0]);
 //                age = Integer.parseInt(text[4]);
